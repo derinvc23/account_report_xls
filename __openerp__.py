@@ -15,6 +15,9 @@
     'depends': ['account'],
     'data': [
         "wizard/account_financial_report_view.xml",
+        "wizard/estado_resultado_view.xml",
+        "reports/estado_resultado_report_view.xml",
+        "security/ir.model.access.csv"
     ],
     'qweb': [
     ],

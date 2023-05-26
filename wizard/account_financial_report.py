@@ -51,9 +51,12 @@ class AccountingReport(models.TransientModel):
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
         data['form'] = self.read(
             ['date_from', 'date_to', 'journal_ids', 'target_move', 'date_from_cmp', 'debit_credit', 'date_to_cmp',
-             'filter_cmp', 'account_report_id', 'enable_filter', 'label_filter', 'target_move'])[0]
+             'filter_cmp', 'account_report_id', 'enable_filter', 'label_filter', 'target_move', 'comparison_context'])[
+            0]
         used_context = self._build_contexts(data)
         data['form']['used_context'] = dict(used_context, lang=self.env.context.get('lang') or 'en_US')
+        comparison_context = self._build_comparison_context(data)
+        data['form']['comparison_context'] = comparison_context
         rep_data = self.env['report.account.report_financial']
         lines = rep_data.get_account_lines(data.get('form'))
 
@@ -85,12 +88,18 @@ class AccountingReport(models.TransientModel):
             if line['account_type'] == 'sum':
                 worksheet.write(row, col, 'Nombre', left_header_style)
                 worksheet.write(row, col + 1, 'Saldo', text_right_bold)
+                if 'balance_cmp' in line:
+                    worksheet.write(row, col + 2, data['form']['label_filter'], text_right)
             elif line['account_type'] == 'account_type':
                 worksheet.write(row, col, line['name'], text_left_bold)
                 worksheet.write(row, col + 1, line['balance'], text_right_bold)
+                if 'balance_cmp' in line:
+                    worksheet.write(row, col + 2, line['balance_cmp'], text_right)
             elif line['account_type'] == 'other':
                 worksheet.write(row, col, line['name'], text_left)
                 worksheet.write(row, col + 1, line['balance'], text_right)
+                if 'balance_cmp' in line:
+                    worksheet.write(row, col + 2, line['balance_cmp'], text_right)
             row += 1
 
         fp = BytesIO()
